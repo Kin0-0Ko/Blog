@@ -28,11 +28,12 @@ export class FavoriteComp extends Component{
 async function linkClick(e){
 	e.preventDefault()
 	if(e.target.classList.contains('js-link')){
-		const postId = e.target.textContent
+		const postId = e.target.dataset.id
 		this.$el.innerHTML = ''
 		this.loader.show()
 		const post = await apiService.fetchPostById(postId)
 		this.loader.hide()
+		console.log(e.target.dataset.id)
 		this.$el.insertAdjacentHTML('afterbegin', renderPost(post, {withBtn: false}))
 	}
 	
@@ -44,10 +45,10 @@ async function linkClick(e){
 
 
 function renderList(list = []){
-	if(list.length){
+	if(list && list.length){
 		return `
 		<ul>
-		${list.map(i => `<li><a href="#" class="js-link">${i}</a></li>`).join(' ')}
+		${list.map(i => `<li><a href="#" class="js-link" data-id="${i.id}">${i.title}</a></li>`).join(' ')}
 		</ul>
 		`
 	}

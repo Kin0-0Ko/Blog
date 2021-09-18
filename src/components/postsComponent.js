@@ -35,23 +35,26 @@ export class PostsComp extends Component{
 function btnHandler(e) {
 	const $el = e.target
 	const id = $el.dataset.id
+	const title = $el.dataset.title
 	if (id) {
 		let fav = JSON.parse(localStorage.getItem('favorites')) || []
+		const candidate = fav.find(p => p.id === id)
 
-		if (fav.includes(id)) {
+		if (candidate) {
 
 			$el.textContent = 'Сохранить'
 			$el.classList.add('button-primary')
 			$el.classList.remove('button-danger')
 
-			fav = fav.filter(fid => fid !== id)
+			fav = fav.filter(p => p.id !== id)
 
 		} else {
+
 			$el.classList.remove('button-primary')
 			$el.classList.add('button-danger')
 			$el.textContent = 'Удалить'
 
-			fav.push(id)
+			fav.push({id, title})
 		}
 
 		localStorage.setItem('favorites', JSON.stringify(fav))
