@@ -1,17 +1,26 @@
 import { Component } from '../core/component'
 import { apiService } from '../services/api.service'
 import { TranformService } from '../services/transform.service'
+import { renderPost } from '../templates/post.template'
 
 export class PostsComp extends Component{
-	constructor(id){
+	constructor(id, {loader}){
 		super(id)
+		this.loader = loader
+	}
+
+	init(){
+		this.$el.addEventListener('click', btnHandler.bind(this))
 	}
 
 	async onShow(){
+		this.loader.show()
 		const data = await apiService.fetchPosts()
 		const posts = TranformService.fbObjectToA(data)
-		const html = posts.map(post => renderPost(post))
-
+		const html = posts.map(post => renderPost(post, {
+			withBtn: true
+		}))
+		this.loader.hide()
 		this.$el.insertAdjacentHTML('afterbegin', html.join(' '))
 	}
 
@@ -21,28 +30,30 @@ export class PostsComp extends Component{
 
 }
 
-function renderPost(post){
 
-	const tag = post.type == 'news'
-		? '<li class="tag tag-blue tag-rounded">Новость</li>'
-		: '<li class="tag tag-rounded">Заметка</li>'
-	const btn = '<button class="button-round button-small button-primary">Сохранить</button>'
 
-	return `
-	    <div class="panel">
-      <div class="panel-head">
-        <p class="panel-title">${post.title}</p>
-        <ul class="tags">
-          ${tag}
-        </ul>
-      </div>
-      <div class="panel-body">
-        <p class="multi-line">${post.fulltext}</p>
-      </div>
-      <div class="panel-footer w-panel-footer">
-        <small>${post.date}</small>
-		${btn}
-      </div>
-    </div>
-	`
+function btnHandler(e) {
+	const $el = e.target
+	const id = $el.dataset.id
+	if (id) {
+		let fav = JSON.parse(localStorage.getItem('favorites')) || []
+
+		if (fav.includes(id)) {
+
+			$el.textContent = 'Сохранить'
+			$el.classList.add('button-primary')
+			$el.classList.remove('button-danger')
+
+			fav = fav.filter(fid => fid !== id)
+
+		} else {
+			$el.classList.remove('button-primary')
+			$el.classList.add('button-danger')
+			$el.textContent = 'Удалить'
+
+			fav.push(id)
+		}
+
+		localStorage.setItem('favorites', JSON.stringify(fav))
+	}
 }
